@@ -1,0 +1,212 @@
+Organizations:
+
+  - &OrdererOrg
+      Name: OrdererOrg
+      ID: OrdererMSP
+      MSPDir: crypto-config/ordererOrganizations/trade.com/msp
+      Policies:
+        Readers:
+          Type: Signature
+          Rule: "OR('OrdererMSP.member')"
+        Writers:
+          Type: Signature
+          Rule: "OR('OrdererMSP.member')"
+        Admins:
+          Type: Signature
+          Rule: "OR('OrdererMSP.admin')"
+      OrdererEndpoints:
+        - orderer0.trade.com:7050
+        - orderer1.trade.com:8050
+        - orderer2.trade.com:9050
+
+  - &Organization1
+      Name: Organization1MSP
+      ID: Organization1MSP
+      MSPDir: crypto-config/peerOrganizations/organization1.trade.com/msp
+      Policies:
+        Readers:
+          Type: Signature
+          Rule: "OR('Organization1MSP.admin', 'Organization1MSP.peer', 'Organization1MSP.client')"
+        Writers:
+          Type: Signature
+          Rule: "OR('Organization1MSP.admin', 'Organization1MSP.client')"
+        Admins:
+          Type: Signature
+          Rule: "OR('Organization1MSP.admin')"
+        Endorsement:
+          Type: Signature
+          Rule: "OR('Organization1MSP.peer')"
+      AnchorPeers:
+        - Host: peer0.organization1.trade.com
+          Port: 7051
+
+  - &Organization2
+      Name: Organization2MSP
+      ID: Organization2MSP
+      MSPDir: crypto-config/peerOrganizations/organization2.trade.com/msp
+      Policies:
+        Readers:
+          Type: Signature
+          Rule: "OR('Organization2MSP.admin', 'Organization2MSP.peer', 'Organization2MSP.client')"
+        Writers:
+          Type: Signature
+          Rule: "OR('Organization2MSP.admin', 'Organization2MSP.client')"
+        Admins:
+          Type: Signature
+          Rule: "OR('Organization2MSP.admin')"
+        Endorsement:
+          Type: Signature
+          Rule: "OR('Organization2MSP.peer')"
+      AnchorPeers:
+        - Host: peer0.organization2.trade.com
+          Port: 9051
+
+  - &Organization3
+      Name: Organization3MSP
+      ID: Organization3MSP
+      MSPDir: crypto-config/peerOrganizations/organization3.trade.com/msp
+      Policies:
+        Readers:
+          Type: Signature
+          Rule: "OR('Organization3MSP.admin', 'Organization3MSP.peer', 'Organization3MSP.client')"
+        Writers:
+          Type: Signature
+          Rule: "OR('Organization3MSP.admin', 'Organization3MSP.client')"
+        Admins:
+          Type: Signature
+          Rule: "OR('Organization3MSP.admin')"
+        Endorsement:
+          Type: Signature
+          Rule: "OR('Organization3MSP.peer')"
+      AnchorPeers:
+        - Host: peer0.organization3.trade.com
+          Port: 11051
+
+Capabilities:
+  Channel: &ChannelCapabilities
+    V2_0: true
+  Orderer: &OrdererCapabilities
+    V2_0: true
+  Application: &ApplicationCapabilities
+    V2_0: true
+
+Application: &ApplicationDefaults
+  Organizations:
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    LifecycleEndorsement:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Endorsement"
+    Endorsement:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Endorsement"
+  Capabilities:
+    <<: *ApplicationCapabilities
+
+Orderer: &OrdererDefaults
+  OrdererType: etcdraft
+  Addresses:
+    - orderer0.trade.com:7050
+    - orderer1.trade.com:8050
+    - orderer2.trade.com:9050
+  
+  EtcdRaft:
+    Consenters:
+      - Host: orderer0.trade.com
+        Port: 7050
+        ClientTLSCert: crypto-config/ordererOrganizations/trade.com/orderers/orderer0.trade.com/tls/server.crt
+        ServerTLSCert: crypto-config/ordererOrganizations/trade.com/orderers/orderer0.trade.com/tls/server.crt
+      - Host: orderer1.trade.com
+        Port: 8050
+        ClientTLSCert: crypto-config/ordererOrganizations/trade.com/orderers/orderer1.trade.com/tls/server.crt
+        ServerTLSCert: crypto-config/ordererOrganizations/trade.com/orderers/orderer1.trade.com/tls/server.crt
+      - Host: orderer2.trade.com
+        Port: 9050
+        ClientTLSCert: crypto-config/ordererOrganizations/trade.com/orderers/orderer2.trade.com/tls/server.crt
+        ServerTLSCert: crypto-config/ordererOrganizations/trade.com/orderers/orderer2.trade.com/tls/server.crt
+  
+  BatchTimeout: 1s
+  BatchSize:
+    MaxMessageCount: 2
+    AbsoluteMaxBytes: 99 MB
+    PreferredMaxBytes: 512 KB
+  
+  Organizations:
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    BlockValidation:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+  Capabilities:
+    <<: *OrdererCapabilities
+
+Channel: &ChannelDefaults
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+  Capabilities:
+    <<: *ChannelCapabilities
+
+Profiles:
+
+  ThreeOrgsOrdererGenesis:
+    <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+      Capabilities:
+        <<: *OrdererCapabilities
+    Consortiums:
+      TradeConsortium:
+        Organizations:
+          - *Organization1
+          - *Organization2
+          - *Organization3
+
+  TradeChannel1:
+    Consortium: TradeConsortium
+    <<: *ChannelDefaults
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *Organization1
+        - *Organization2
+        - *Organization3
+      Capabilities:
+        <<: *ApplicationCapabilities
+
+  TradeChannel2:
+    Consortium: TradeConsortium
+    <<: *ChannelDefaults
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *Organization1
+        - *Organization2
+        - *Organization3
+      Capabilities:
+        <<: *ApplicationCapabilities
