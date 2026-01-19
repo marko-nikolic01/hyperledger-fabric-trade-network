@@ -1,0 +1,34 @@
+PeerOrgs:
+
+  - Name: Organization1
+    Domain: organization1.trade.com
+    EnableNodeOUs: true
+    Template:
+      Count: 3
+    Users:
+      Count: 2
+
+  - Name: Organization2
+    Domain: organization2.trade.com
+    EnableNodeOUs: true
+    Template:
+      Count: 3
+    Users:
+      Count: 2
+
+  - Name: Organization3
+    Domain: organization3.trade.com
+    EnableNodeOUs: true
+    Template:
+      Count: 3
+    Users:
+      Count: 2
+
+OrdererOrgs:
+  - Name: Orderer
+    Domain: trade.com
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: orderer0
+      - Hostname: orderer1
+      - Hostname: orderer2
