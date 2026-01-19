@@ -19,68 +19,68 @@ Organizations:
         - orderer1.trade.com:8050
         - orderer2.trade.com:9050
 
-  - &Organization1
-      Name: Organization1MSP
-      ID: Organization1MSP
-      MSPDir: crypto-config/peerOrganizations/organization1.trade.com/msp
+  - &Org1
+      Name: Org1MSP
+      ID: Org1MSP
+      MSPDir: crypto-config/peerOrganizations/org1.trade.com/msp
       Policies:
         Readers:
           Type: Signature
-          Rule: "OR('Organization1MSP.admin', 'Organization1MSP.peer', 'Organization1MSP.client')"
+          Rule: "OR('Org1MSP.admin', 'Org1MSP.peer', 'Org1MSP.client')"
         Writers:
           Type: Signature
-          Rule: "OR('Organization1MSP.admin', 'Organization1MSP.client')"
+          Rule: "OR('Org1MSP.admin', 'Org1MSP.client')"
         Admins:
           Type: Signature
-          Rule: "OR('Organization1MSP.admin')"
+          Rule: "OR('Org1MSP.admin')"
         Endorsement:
           Type: Signature
-          Rule: "OR('Organization1MSP.peer')"
+          Rule: "OR('Org1MSP.peer')"
       AnchorPeers:
-        - Host: peer0.organization1.trade.com
+        - Host: peer0.org1.trade.com
           Port: 7051
 
-  - &Organization2
-      Name: Organization2MSP
-      ID: Organization2MSP
-      MSPDir: crypto-config/peerOrganizations/organization2.trade.com/msp
+  - &Org2
+      Name: Org2MSP
+      ID: Org2MSP
+      MSPDir: crypto-config/peerOrganizations/org2.trade.com/msp
       Policies:
         Readers:
           Type: Signature
-          Rule: "OR('Organization2MSP.admin', 'Organization2MSP.peer', 'Organization2MSP.client')"
+          Rule: "OR('Org2MSP.admin', 'Org2MSP.peer', 'Org2MSP.client')"
         Writers:
           Type: Signature
-          Rule: "OR('Organization2MSP.admin', 'Organization2MSP.client')"
+          Rule: "OR('Org2MSP.admin', 'Org2MSP.client')"
         Admins:
           Type: Signature
-          Rule: "OR('Organization2MSP.admin')"
+          Rule: "OR('Org2MSP.admin')"
         Endorsement:
           Type: Signature
-          Rule: "OR('Organization2MSP.peer')"
+          Rule: "OR('Org2MSP.peer')"
       AnchorPeers:
-        - Host: peer0.organization2.trade.com
+        - Host: peer0.org2.trade.com
           Port: 9051
 
-  - &Organization3
-      Name: Organization3MSP
-      ID: Organization3MSP
-      MSPDir: crypto-config/peerOrganizations/organization3.trade.com/msp
+  - &Org3
+      Name: Org3MSP
+      ID: Org3MSP
+      MSPDir: crypto-config/peerOrganizations/org3.trade.com/msp
       Policies:
         Readers:
           Type: Signature
-          Rule: "OR('Organization3MSP.admin', 'Organization3MSP.peer', 'Organization3MSP.client')"
+          Rule: "OR('Org3MSP.admin', 'Org3MSP.peer', 'Org3MSP.client')"
         Writers:
           Type: Signature
-          Rule: "OR('Organization3MSP.admin', 'Organization3MSP.client')"
+          Rule: "OR('Org3MSP.admin', 'Org3MSP.client')"
         Admins:
           Type: Signature
-          Rule: "OR('Organization3MSP.admin')"
+          Rule: "OR('Org3MSP.admin')"
         Endorsement:
           Type: Signature
-          Rule: "OR('Organization3MSP.peer')"
+          Rule: "OR('Org3MSP.peer')"
       AnchorPeers:
-        - Host: peer0.organization3.trade.com
-          Port: 11051
+        - Host: peer0.org3.trade.com
+          Port: 13051
 
 Capabilities:
   Channel: &ChannelCapabilities
@@ -183,9 +183,9 @@ Profiles:
     Consortiums:
       TradeConsortium:
         Organizations:
-          - *Organization1
-          - *Organization2
-          - *Organization3
+          - *Org1
+          - *Org2
+          - *Org3
 
   TradeChannel1:
     Consortium: TradeConsortium
@@ -193,9 +193,9 @@ Profiles:
     Application:
       <<: *ApplicationDefaults
       Organizations:
-        - *Organization1
-        - *Organization2
-        - *Organization3
+        - *Org1
+        - *Org2
+        - *Org3
       Capabilities:
         <<: *ApplicationCapabilities
 
@@ -205,8 +205,8 @@ Profiles:
     Application:
       <<: *ApplicationDefaults
       Organizations:
-        - *Organization1
-        - *Organization2
-        - *Organization3
+        - *Org1
+        - *Org2
+        - *Org3
       Capabilities:
         <<: *ApplicationCapabilities

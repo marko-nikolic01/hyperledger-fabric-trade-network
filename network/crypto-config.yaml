@@ -1,23 +1,23 @@
 PeerOrgs:
 
-  - Name: Organization1
-    Domain: organization1.trade.com
+  - Name: Org1
+    Domain: org1.trade.com
     EnableNodeOUs: true
     Template:
       Count: 3
     Users:
       Count: 2
 
-  - Name: Organization2
-    Domain: organization2.trade.com
+  - Name: Org2
+    Domain: org2.trade.com
     EnableNodeOUs: true
     Template:
       Count: 3
     Users:
       Count: 2
 
-  - Name: Organization3
-    Domain: organization3.trade.com
+  - Name: Org3
+    Domain: org3.trade.com
     EnableNodeOUs: true
     Template:
       Count: 3
