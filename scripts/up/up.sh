@@ -11,6 +11,7 @@ printColor "$GREEN" "Starting Trading Network..."
 # Generate crypto material if needed
 if [ ! -d "$NETWORK_DIR/crypto-config/peerOrganizations" ]; then
     printColor "$YELLOW" "Crypto material not found. Generating..."
+    chmod +x "$SCRIPT_DIR/generate.sh"
     "$SCRIPT_DIR/generate.sh" || exit 1
 fi
 
