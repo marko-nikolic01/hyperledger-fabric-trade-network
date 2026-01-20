@@ -22,7 +22,7 @@ if [ $? -eq 0 ]; then
     printColor "$GREEN" "Waiting for containers to start..."
     sleep 10
     
-    printColor "$GREEN" "✓ Trading Network is up and running!"
+    printColor "$GREEN" "Trading Network started successfully"
     echo ""
     printColor "$BLUE" "Network Status:"
     docker ps --filter "network=trade" --format "table {{.Names}}\t{{.Status}}" | head -15

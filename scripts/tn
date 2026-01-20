@@ -8,6 +8,9 @@ case "$1" in
     up)
         exec "$SCRIPT_DIR/up/up.sh"
         ;;
+    down)
+        exec "$SCRIPT_DIR/down/down.sh"
+        ;;
     *)
         printColor "$RED" "Error: Unknown command '$1'"
         exit 1
