@@ -18,8 +18,14 @@ case "$1" in
         chmod +x "$SCRIPT_DIR/clean/clean.sh"
         exec "$SCRIPT_DIR/clean/clean.sh"
         ;;
+    help|"")
+        chmod +x "$SCRIPT_DIR/help/help.sh"
+        exec "$SCRIPT_DIR/help/help.sh"
+        ;;
     *)
         printColor "$RED" "Error: Unknown command '$1'"
+        echo ""
+        printColor "$BLUE" "Run './scripts/tn help' for usage information"
         exit 1
         ;;
 esac
