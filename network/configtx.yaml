@@ -180,16 +180,23 @@ Profiles:
         - *OrdererOrg
       Capabilities:
         <<: *OrdererCapabilities
-    Consortiums:
-      TradeConsortium:
-        Organizations:
-          - *Org1
-          - *Org2
-          - *Org3
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *Org1
+        - *Org2
+        - *Org3
+      Capabilities:
+        <<: *ApplicationCapabilities
 
   TradeChannel1:
-    Consortium: TradeConsortium
     <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+      Capabilities:
+        <<: *OrdererCapabilities
     Application:
       <<: *ApplicationDefaults
       Organizations:
@@ -200,8 +207,13 @@ Profiles:
         <<: *ApplicationCapabilities
 
   TradeChannel2:
-    Consortium: TradeConsortium
     <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+      Capabilities:
+        <<: *OrdererCapabilities
     Application:
       <<: *ApplicationDefaults
       Organizations:

@@ -8,68 +8,29 @@ source "$PROJECT_ROOT/scripts/utils/print-colored.sh"
 printColor "$BLUE" "Checking Trading Network status..."
 echo ""
 
-if ! docker info > /dev/null 2>&1; then
-    printColor "$RED" "Docker is not running"
-    exit 1
-fi
+# Check containers
+chmod +x "$SCRIPT_DIR/checkContainers.sh"
+"$SCRIPT_DIR/checkContainers.sh"
+CONTAINERS_OK=$?
 
-ORDERERS=("orderer0.trade.com" "orderer1.trade.com" "orderer2.trade.com")
-PEERS=("peer0.org1.trade.com" "peer1.org1.trade.com" "peer2.org1.trade.com" 
-       "peer0.org2.trade.com" "peer1.org2.trade.com" "peer2.org2.trade.com"
-       "peer0.org3.trade.com" "peer1.org3.trade.com" "peer2.org3.trade.com")
-COUCHDBS=("couchdb0.org1" "couchdb1.org1" "couchdb2.org1"
-          "couchdb0.org2" "couchdb1.org2" "couchdb2.org2"
-          "couchdb0.org3" "couchdb1.org3" "couchdb2.org3")
-CLI="cli"
-
-ALL_RUNNING=true
-
-printColor "$YELLOW" "Orderers:"
-for container in "${ORDERERS[@]}"; do
-    if docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
-        printColor "$GREEN" "  $container"
-    else
-        printColor "$RED" "  $container"
-        ALL_RUNNING=false
-    fi
-done
-
+# Check channels
 echo ""
-printColor "$YELLOW" "Peers:"
-for container in "${PEERS[@]}"; do
-    if docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
-        printColor "$GREEN" "  $container"
-    else
-        printColor "$RED" "  $container"
-        ALL_RUNNING=false
-    fi
-done
+chmod +x "$SCRIPT_DIR/checkChannels.sh"
+"$SCRIPT_DIR/checkChannels.sh"
+CHANNELS_OK=$?
 
+# Summary
 echo ""
-printColor "$YELLOW" "CouchDB:"
-for container in "${COUCHDBS[@]}"; do
-    if docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
-        printColor "$GREEN" "  $container"
-    else
-        printColor "$RED" "  $container"
-        ALL_RUNNING=false
-    fi
-done
-
-echo ""
-printColor "$YELLOW" "CLI:"
-if docker ps --format '{{.Names}}' | grep -q "^${CLI}$"; then
-    printColor "$GREEN" "  $CLI"
-else
-    printColor "$RED" "  $CLI"
-    ALL_RUNNING=false
-fi
-
-echo ""
-if [ "$ALL_RUNNING" = true ]; then
-    printColor "$GREEN" "All containers are running!"
+if [ $CONTAINERS_OK -eq 0 ] && [ $CHANNELS_OK -eq 0 ]; then
+    printColor "$GREEN" "All checks passed"
+    printColor "$GREEN" "  - 21 containers running"
+    printColor "$GREEN" "  - 2 channels configured"
+    printColor "$GREEN" "  - 9 peers on each channel"
     exit 0
 else
-    printColor "$RED" "Some containers are not running"
+    printColor "$RED" "Some checks failed"
+    [ $CONTAINERS_OK -ne 0 ] && printColor "$RED" "  - Container check failed"
+    [ $CHANNELS_OK -ne 0 ] && printColor "$RED" "  - Channel check failed"
     exit 1
 fi
+

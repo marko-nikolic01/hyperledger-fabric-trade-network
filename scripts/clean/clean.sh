@@ -2,25 +2,21 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
-NETWORK_DIR="$PROJECT_ROOT/network"
 
 source "$PROJECT_ROOT/scripts/utils/print-colored.sh"
 
-printColor "$YELLOW" "Cleaning generated artifacts..."
+printColor "$YELLOW" "Cleaning Trading Network..."
+echo ""
 
-if [ -d "$NETWORK_DIR/crypto-config" ]; then
-    printColor "$BLUE" "Removing crypto-config/"
-    sudo rm -rf "$NETWORK_DIR/crypto-config"
-fi
+# Clean artifacts
+chmod +x "$SCRIPT_DIR/cleanArtifacts.sh"
+"$SCRIPT_DIR/cleanArtifacts.sh"
 
-if [ -d "$NETWORK_DIR/channel-artifacts" ]; then
-    printColor "$BLUE" "Removing channel-artifacts/"
-    sudo rm -rf "$NETWORK_DIR/channel-artifacts"
-fi
+echo ""
 
-if [ -d "$NETWORK_DIR/system-genesis-block" ]; then
-    printColor "$BLUE" "Removing system-genesis-block/"
-    sudo rm -rf "$NETWORK_DIR/system-genesis-block"
-fi
+# Clean volumes
+chmod +x "$SCRIPT_DIR/cleanVolumes.sh"
+"$SCRIPT_DIR/cleanVolumes.sh"
 
-printColor "$GREEN" "All generated artifacts cleaned"
+echo ""
+printColor "$GREEN" "All generated artifacts and volumes cleaned"

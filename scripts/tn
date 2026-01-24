@@ -22,6 +22,10 @@ case "$1" in
         chmod +x "$SCRIPT_DIR/check/check.sh"
         exec "$SCRIPT_DIR/check/check.sh"
         ;;
+    createchannels)
+        chmod +x "$SCRIPT_DIR/createchannels/createchannels.sh"
+        exec "$SCRIPT_DIR/createchannels/createchannels.sh"
+        ;;
     help|"")
         chmod +x "$SCRIPT_DIR/help/help.sh"
         exec "$SCRIPT_DIR/help/help.sh"
