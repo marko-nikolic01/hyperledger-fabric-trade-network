@@ -3,7 +3,7 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 
-source "$PROJECT_ROOT/scripts/utils/print-colored.sh"
+source "$PROJECT_ROOT/cli/utils/print-colored.sh"
 
 printColor "$BLUE" "Checking containers..."
 echo ""
