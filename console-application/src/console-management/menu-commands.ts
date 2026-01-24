@@ -7,6 +7,7 @@ const commandMap: Record<string, string> = {
     [MenuOption.CLEAN_NETWORK]: 'clean',
     [MenuOption.CHECK_STATUS]: 'check',
     [MenuOption.CREATE_CHANNELS]: 'createchannels',
+    [MenuOption.DEPLOY_CHAINCODE]: 'deploycc',
     [MenuOption.HELP]: 'help'
 };
 

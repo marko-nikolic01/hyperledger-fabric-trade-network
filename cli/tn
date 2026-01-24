@@ -18,6 +18,10 @@ case "$1" in
         chmod +x "$SCRIPT_DIR/createchannels/createchannels.sh"
         exec "$SCRIPT_DIR/createchannels/createchannels.sh"
         ;;
+    deploycc)
+        chmod +x "$SCRIPT_DIR/deploycc/deploycc.sh"
+        exec "$SCRIPT_DIR/deploycc/deploycc.sh"
+        ;;
     down)
         chmod +x "$SCRIPT_DIR/down/down.sh"
         exec "$SCRIPT_DIR/down/down.sh"

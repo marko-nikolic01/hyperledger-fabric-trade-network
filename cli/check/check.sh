@@ -19,18 +19,26 @@ chmod +x "$SCRIPT_DIR/checkChannels.sh"
 "$SCRIPT_DIR/checkChannels.sh"
 CHANNELS_OK=$?
 
+# Check chaincode
+echo ""
+chmod +x "$SCRIPT_DIR/checkChaincode.sh"
+"$SCRIPT_DIR/checkChaincode.sh"
+CHAINCODE_OK=$?
+
 # Summary
 echo ""
-if [ $CONTAINERS_OK -eq 0 ] && [ $CHANNELS_OK -eq 0 ]; then
+if [ $CONTAINERS_OK -eq 0 ] && [ $CHANNELS_OK -eq 0 ] && [ $CHAINCODE_OK -eq 0 ]; then
     printColor "$GREEN" "All checks passed"
     printColor "$GREEN" "  - 21 containers running"
     printColor "$GREEN" "  - 2 channels configured"
     printColor "$GREEN" "  - 9 peers on each channel"
+    printColor "$GREEN" "  - Chaincode deployed and functional"
     exit 0
 else
     printColor "$RED" "Some checks failed"
     [ $CONTAINERS_OK -ne 0 ] && printColor "$RED" "  - Container check failed"
     [ $CHANNELS_OK -ne 0 ] && printColor "$RED" "  - Channel check failed"
+    [ $CHAINCODE_OK -ne 0 ] && printColor "$RED" "  - Chaincode check failed"
     exit 1
 fi
 

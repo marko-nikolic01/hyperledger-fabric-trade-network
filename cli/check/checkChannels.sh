@@ -72,10 +72,41 @@ for channel in "${CHANNELS[@]}"; do
     echo ""
 done
 
-if [ "$CHANNEL_CHECK_PASSED" = true ]; then
+printColor "$BLUE" "Checking orderers..."
+echo ""
+
+ORDERERS=("orderer0.trade.com:7053" "orderer1.trade.com:8053" "orderer2.trade.com:9053")
+ORDERER_NAMES=("orderer0" "orderer1" "orderer2")
+ORDERER_CHECK_PASSED=true
+
+for i in "${!ORDERERS[@]}"; do
+    ORDERER=${ORDERERS[$i]}
+    ORDERER_NAME=${ORDERER_NAMES[$i]}
+    
+    ORDERER_CHANNELS=$(docker exec cli osnadmin channel list \
+        -o $ORDERER \
+        --ca-file /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/trade.com/orderers/${ORDERER_NAME}.trade.com/msp/tlscacerts/tlsca.trade.com-cert.pem \
+        --client-cert /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/trade.com/orderers/${ORDERER_NAME}.trade.com/tls/server.crt \
+        --client-key /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/trade.com/orderers/${ORDERER_NAME}.trade.com/tls/server.key 2>&1)
+    
+    if echo "$ORDERER_CHANNELS" | grep -q "tradechannel1" && echo "$ORDERER_CHANNELS" | grep -q "tradechannel2"; then
+        printColor "$GREEN" "  $ORDERER_NAME has both channels"
+    else
+        printColor "$RED" "  $ORDERER_NAME missing channels"
+        ORDERER_CHECK_PASSED=false
+    fi
+done
+
+echo ""
+
+if [ "$CHANNEL_CHECK_PASSED" = true ] && [ "$ORDERER_CHECK_PASSED" = true ]; then
     printColor "$GREEN" "All channel checks passed"
+    printColor "$GREEN" "  - All 9 peers on both channels"
+    printColor "$GREEN" "  - All 3 orderers managing both channels"
     exit 0
 else
     printColor "$RED" "Some channel checks failed"
+    [ "$CHANNEL_CHECK_PASSED" = false ] && printColor "$RED" "  - Peer channel membership incomplete"
+    [ "$ORDERER_CHECK_PASSED" = false ] && printColor "$RED" "  - Orderer channel participation incomplete"
     exit 1
 fi

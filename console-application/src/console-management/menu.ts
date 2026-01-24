@@ -6,8 +6,7 @@ export enum MenuOption {
     CLEAN_NETWORK = 'Clean Network (tn clean)',
     CHECK_STATUS = 'Check Status (tn check)',
     CREATE_CHANNELS = 'Create Channels (tn createchannels)',
-    DEPLOY_CHAINCODE = 'Deploy Chaincode (tn deploy) [Coming soon]',
-    RUN_APPLICATION = 'Run Application (tn app) [Coming soon]',
+    DEPLOY_CHAINCODE = 'Deploy Chaincode (tn deploycc)',
     HELP = 'Help (tn help)',
     EXIT = 'Exit'
 }
@@ -35,8 +34,6 @@ export async function showMenu(): Promise<MenuOption> {
                 MenuOption.CREATE_CHANNELS,
                 new inquirer.Separator('--- Chaincode Management ---'),
                 MenuOption.DEPLOY_CHAINCODE,
-                new inquirer.Separator('--- Application ---'),
-                MenuOption.RUN_APPLICATION,
                 new inquirer.Separator('--- Other ---'),
                 MenuOption.HELP,
                 MenuOption.EXIT

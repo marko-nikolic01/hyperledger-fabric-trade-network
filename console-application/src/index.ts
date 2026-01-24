@@ -9,12 +9,6 @@ async function handleMenuChoice(choice: MenuOption): Promise<boolean> {
         return false;
     }
 
-    if (choice === MenuOption.DEPLOY_CHAINCODE || choice === MenuOption.RUN_APPLICATION) {
-        console.log('\nThis feature is coming soon...');
-        await waitForEnter();
-        return true;
-    }
-
     const command = getCommandForOption(choice);
     if (command) {
         if (choice === MenuOption.STOP_NETWORK) {

@@ -36,7 +36,7 @@ generateChannelArtifacts() {
     mkdir -p channel-artifacts
     mkdir -p system-genesis-block
     
-    docker run --rm -v "$(pwd)":/work -w /work -e FABRIC_CFG_PATH=/work $FABRIC_TOOLS_IMAGE configtxgen -profile ThreeOrgsOrdererGenesis -channelID system-channel -outputBlock ./system-genesis-block/genesis.block
+    docker run --rm -v "$(pwd)":/work -w /work -e FABRIC_CFG_PATH=/work $FABRIC_TOOLS_IMAGE configtxgen -profile ThreeOrgsOrdererGenesis -channelID syschannel -outputBlock ./system-genesis-block/genesis.block
     if [ $? -ne 0 ]; then
         printColor "$RED" "Failed to generate genesis block"
         return 1

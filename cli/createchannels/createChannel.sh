@@ -7,7 +7,7 @@ NETWORK_DIR="$PROJECT_ROOT/network"
 source "$PROJECT_ROOT/cli/utils/print-colored.sh"
 
 CHANNEL_NAME=$1
-ORDERER_CA="$NETWORK_DIR/crypto-config/ordererOrganizations/trade.com/orderers/orderer0.trade.com/msp/tlscacerts/tlsca.trade.com-cert.pem"
+ORDERER_CA="/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/trade.com/orderers/orderer0.trade.com/msp/tlscacerts/tlsca.trade.com-cert.pem"
 
 if [ -z "$CHANNEL_NAME" ]; then
     printColor "$RED" "Error: Channel name not provided"
@@ -26,7 +26,7 @@ else
     exit 1
 fi
 
-printColor "$YELLOW" "Generating channel configuration block..."
+printColor "$YELLOW" "Generating channel genesis block..."
 docker run --rm \
     -v "$NETWORK_DIR":/work \
     -w /work \
@@ -37,11 +37,60 @@ docker run --rm \
     -channelID $CHANNEL_NAME
 
 if [ $? -ne 0 ]; then
-    printColor "$RED" "Failed to generate channel configuration"
+    printColor "$RED" "Failed to generate channel genesis block"
     exit 1
 fi
 
-printColor "$GREEN" "Channel configuration block generated"
+printColor "$GREEN" "Channel genesis block generated"
+
+printColor "$YELLOW" "Submitting channel to all orderers via osnadmin..."
+
+# Join orderer0
+printColor "$BLUE" "  → Joining orderer0"
+docker exec cli osnadmin channel join \
+    --channelID $CHANNEL_NAME \
+    --config-block /opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts/${CHANNEL_NAME}.block \
+    -o orderer0.trade.com:7053 \
+    --ca-file "$ORDERER_CA" \
+    --client-cert /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/trade.com/orderers/orderer0.trade.com/tls/server.crt \
+    --client-key /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/trade.com/orderers/orderer0.trade.com/tls/server.key
+
+if [ $? -ne 0 ]; then
+    printColor "$RED" "Failed to join channel on orderer0"
+    exit 1
+fi
+
+# Join orderer1
+printColor "$BLUE" "  → Joining orderer1"
+docker exec cli osnadmin channel join \
+    --channelID $CHANNEL_NAME \
+    --config-block /opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts/${CHANNEL_NAME}.block \
+    -o orderer1.trade.com:8053 \
+    --ca-file /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/trade.com/orderers/orderer1.trade.com/msp/tlscacerts/tlsca.trade.com-cert.pem \
+    --client-cert /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/trade.com/orderers/orderer1.trade.com/tls/server.crt \
+    --client-key /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/trade.com/orderers/orderer1.trade.com/tls/server.key
+
+if [ $? -ne 0 ]; then
+    printColor "$RED" "Failed to join channel on orderer1"
+    exit 1
+fi
+
+# Join orderer2
+printColor "$BLUE" "  → Joining orderer2"
+docker exec cli osnadmin channel join \
+    --channelID $CHANNEL_NAME \
+    --config-block /opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts/${CHANNEL_NAME}.block \
+    -o orderer2.trade.com:9053 \
+    --ca-file /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/trade.com/orderers/orderer2.trade.com/msp/tlscacerts/tlsca.trade.com-cert.pem \
+    --client-cert /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/trade.com/orderers/orderer2.trade.com/tls/server.crt \
+    --client-key /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/trade.com/orderers/orderer2.trade.com/tls/server.key
+
+if [ $? -ne 0 ]; then
+    printColor "$RED" "Failed to join channel on orderer2"
+    exit 1
+fi
+
+printColor "$GREEN" "Channel joined on all orderers"
 
 printColor "$YELLOW" "Joining peers to channel..."
 
