@@ -6,34 +6,38 @@ chmod +x "$SCRIPT_DIR/utils/print-colored.sh"
 source "$SCRIPT_DIR/utils/print-colored.sh"
 
 case "$1" in
-    up)
-        chmod +x "$SCRIPT_DIR/up/up.sh"
-        exec "$SCRIPT_DIR/up/up.sh"
-        ;;
-    down)
-        chmod +x "$SCRIPT_DIR/down/down.sh"
-        exec "$SCRIPT_DIR/down/down.sh"
+    check)
+        chmod +x "$SCRIPT_DIR/check/check.sh"
+        exec "$SCRIPT_DIR/check/check.sh"
         ;;
     clean)
         chmod +x "$SCRIPT_DIR/clean/clean.sh"
         exec "$SCRIPT_DIR/clean/clean.sh"
         ;;
-    check)
-        chmod +x "$SCRIPT_DIR/check/check.sh"
-        exec "$SCRIPT_DIR/check/check.sh"
-        ;;
     createchannels)
         chmod +x "$SCRIPT_DIR/createchannels/createchannels.sh"
         exec "$SCRIPT_DIR/createchannels/createchannels.sh"
+        ;;
+    down)
+        chmod +x "$SCRIPT_DIR/down/down.sh"
+        exec "$SCRIPT_DIR/down/down.sh"
         ;;
     help|"")
         chmod +x "$SCRIPT_DIR/help/help.sh"
         exec "$SCRIPT_DIR/help/help.sh"
         ;;
+    interactive)
+        chmod +x "$SCRIPT_DIR/interactive/interactive.sh"
+        exec "$SCRIPT_DIR/interactive/interactive.sh"
+        ;;
+    up)
+        chmod +x "$SCRIPT_DIR/up/up.sh"
+        exec "$SCRIPT_DIR/up/up.sh"
+        ;;
     *)
         printColor "$RED" "Error: Unknown command '$1'"
         echo ""
-        printColor "$BLUE" "Run './scripts/tn help' for usage information"
+        printColor "$BLUE" "Run './tn help' for usage information"
         exit 1
         ;;
 esac

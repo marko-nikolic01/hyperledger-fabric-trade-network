@@ -4,7 +4,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 NETWORK_DIR="$PROJECT_ROOT/network"
 
-source "$PROJECT_ROOT/scripts/utils/print-colored.sh"
+source "$PROJECT_ROOT/cli/utils/print-colored.sh"
 
 CHANNEL_NAME=$1
 ORDERER_CA="$NETWORK_DIR/crypto-config/ordererOrganizations/trade.com/orderers/orderer0.trade.com/msp/tlscacerts/tlsca.trade.com-cert.pem"
