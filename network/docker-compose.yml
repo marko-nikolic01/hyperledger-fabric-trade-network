@@ -18,6 +18,27 @@ networks:
   trade:
     name: trade
 
+x-common: &common
+  networks: [ trade ]
+
+x-orderer-common: &orderer-common
+  <<: *common
+  image: hyperledger/fabric-orderer:2.5
+  command: orderer
+  working_dir: /root
+
+x-peer-common: &peer-common
+  <<: *common
+  image: hyperledger/fabric-peer:2.5
+  command: peer node start
+  working_dir: /root
+
+x-couchdb-common: &couchdb-common
+  <<: *common
+  image: couchdb:3.3
+  env_file:
+    - ./environment/couchdb.env
+
 services:
 
   # Orderer 0
@@ -85,14 +106,9 @@ services:
 
   # CouchDB for Peer0 Org1
   couchdb0.org1:
+    <<: *couchdb-common
     container_name: couchdb0.org1
-    image: couchdb:3.3
-    env_file:
-      - ./environment/couchdb.env
-    ports:
-      - "5984:5984"
-    networks:
-      - trade
+    ports: [ 5984:5984 ]
 
   # Peer0 Org1
   peer0.org1.trade.com:
@@ -119,14 +135,9 @@ services:
 
   # CouchDB for Peer1 Org1
   couchdb1.org1:
+    <<: *couchdb-common
     container_name: couchdb1.org1
-    image: couchdb:3.3
-    env_file:
-      - ./environment/couchdb.env
-    ports:
-      - "6984:5984"
-    networks:
-      - trade
+    ports: [ 6984:5984 ]
 
   # Peer1 Org1
   peer1.org1.trade.com:
@@ -153,14 +164,9 @@ services:
 
   # CouchDB for Peer2 Org1
   couchdb2.org1:
+    <<: *couchdb-common
     container_name: couchdb2.org1
-    image: couchdb:3.3
-    env_file:
-      - ./environment/couchdb.env
-    ports:
-      - "7984:5984"
-    networks:
-      - trade
+    ports: [ 7984:5984 ]
 
   # Peer2 Org1
   peer2.org1.trade.com:
@@ -187,14 +193,9 @@ services:
 
   # CouchDB for Peer0 Org2
   couchdb0.org2:
+    <<: *couchdb-common
     container_name: couchdb0.org2
-    image: couchdb:3.3
-    env_file:
-      - ./environment/couchdb.env
-    ports:
-      - "8984:5984"
-    networks:
-      - trade
+    ports: [ 8984:5984 ]
 
   # Peer0 Org2
   peer0.org2.trade.com:
@@ -221,14 +222,9 @@ services:
 
   # CouchDB for Peer1 Org2
   couchdb1.org2:
+    <<: *couchdb-common
     container_name: couchdb1.org2
-    image: couchdb:3.3
-    env_file:
-      - ./environment/couchdb.env
-    ports:
-      - "9984:5984"
-    networks:
-      - trade
+    ports: [ 9984:5984 ]
 
   # Peer1 Org2
   peer1.org2.trade.com:
@@ -255,14 +251,9 @@ services:
 
   # CouchDB for Peer2 Org2
   couchdb2.org2:
+    <<: *couchdb-common
     container_name: couchdb2.org2
-    image: couchdb:3.3
-    env_file:
-      - ./environment/couchdb.env
-    ports:
-      - "10984:5984"
-    networks:
-      - trade
+    ports: [ 10984:5984 ]
 
   # Peer2 Org2
   peer2.org2.trade.com:
@@ -289,14 +280,9 @@ services:
 
   # CouchDB for Peer0 Org3
   couchdb0.org3:
+    <<: *couchdb-common
     container_name: couchdb0.org3
-    image: couchdb:3.3
-    env_file:
-      - ./environment/couchdb.env
-    ports:
-      - "11984:5984"
-    networks:
-      - trade
+    ports: [ 11984:5984 ]
 
   # Peer0 Org3
   peer0.org3.trade.com:
@@ -323,14 +309,9 @@ services:
 
   # CouchDB for Peer1 Org3
   couchdb1.org3:
+    <<: *couchdb-common
     container_name: couchdb1.org3
-    image: couchdb:3.3
-    env_file:
-      - ./environment/couchdb.env
-    ports:
-      - "12984:5984"
-    networks:
-      - trade
+    ports: [ 12984:5984 ]
 
   # Peer1 Org3
   peer1.org3.trade.com:
@@ -357,14 +338,9 @@ services:
 
   # CouchDB for Peer2 Org3
   couchdb2.org3:
+    <<: *couchdb-common
     container_name: couchdb2.org3
-    image: couchdb:3.3
-    env_file:
-      - ./environment/couchdb.env
-    ports:
-      - "13984:5984"
-    networks:
-      - trade
+    ports: [ 13984:5984 ]
 
   # Peer2 Org3
   peer2.org3.trade.com:
@@ -391,6 +367,7 @@ services:
 
   # CLI tool
   cli:
+    <<: *common
     container_name: cli
     image: hyperledger/fabric-tools:2.5
     tty: true
@@ -409,5 +386,3 @@ services:
       - peer0.org1.trade.com
       - peer0.org2.trade.com
       - peer0.org3.trade.com
-    networks:
-      - trade
