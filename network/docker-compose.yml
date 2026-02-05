@@ -1,5 +1,3 @@
-version: '3.7'
-
 volumes:
   orderer0.trade.com:
   orderer1.trade.com:
@@ -26,6 +24,8 @@ x-orderer-common: &orderer-common
   image: hyperledger/fabric-orderer:2.5
   command: orderer
   working_dir: /root
+  env_file:
+    - ./environment/orderer.env
 
 x-peer-common: &peer-common
   <<: *common
@@ -43,66 +43,48 @@ services:
 
   # Orderer 0
   orderer0.trade.com:
+    <<: *orderer-common
     container_name: orderer0.trade.com
-    image: hyperledger/fabric-orderer:2.5
-    env_file:
-      - ./environment/orderer.env
-      - ./environment/orderer0.env
-    working_dir: /root
-    command: orderer
+    environment:
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_ADMIN_LISTENADDRESS=0.0.0.0:7053
+      - ORDERER_OPERATIONS_LISTENADDRESS=orderer0.trade.com:9443
     volumes:
       - ./system-genesis-block/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
       - ./crypto-config/ordererOrganizations/trade.com/orderers/orderer0.trade.com/msp:/var/hyperledger/orderer/msp
       - ./crypto-config/ordererOrganizations/trade.com/orderers/orderer0.trade.com/tls:/var/hyperledger/orderer/tls
       - orderer0.trade.com:/var/hyperledger/production/orderer
-    ports:
-      - 7050:7050
-      - 7053:7053
-      - 9443:9443
-    networks:
-      - trade
+    ports: [ 7050:7050, 7053:7053, 9443:9443]
 
   # Orderer 1
   orderer1.trade.com:
+    <<: *orderer-common
     container_name: orderer1.trade.com
-    image: hyperledger/fabric-orderer:2.5
-    env_file:
-      - ./environment/orderer.env
-      - ./environment/orderer1.env
-    working_dir: /root
-    command: orderer
+    environment:
+      - ORDERER_GENERAL_LISTENPORT=8050
+      - ORDERER_ADMIN_LISTENADDRESS=0.0.0.0:8053
+      - ORDERER_OPERATIONS_LISTENADDRESS=orderer1.trade.com:9444
     volumes:
       - ./system-genesis-block/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
       - ./crypto-config/ordererOrganizations/trade.com/orderers/orderer1.trade.com/msp:/var/hyperledger/orderer/msp
       - ./crypto-config/ordererOrganizations/trade.com/orderers/orderer1.trade.com/tls:/var/hyperledger/orderer/tls
       - orderer1.trade.com:/var/hyperledger/production/orderer
-    ports:
-      - 8050:8050
-      - 8053:8053
-      - 9444:9444
-    networks:
-      - trade
+    ports: [ 8050:8050, 8053:8053, 9444:9444 ]
 
   # Orderer 2
   orderer2.trade.com:
+    <<: *orderer-common
     container_name: orderer2.trade.com
-    image: hyperledger/fabric-orderer:2.5
-    env_file:
-      - ./environment/orderer.env
-      - ./environment/orderer2.env
-    working_dir: /root
-    command: orderer
+    environment:
+      - ORDERER_GENERAL_LISTENPORT=9050
+      - ORDERER_ADMIN_LISTENADDRESS=0.0.0.0:9053
+      - ORDERER_OPERATIONS_LISTENADDRESS=orderer2.trade.com:9445
     volumes:
       - ./system-genesis-block/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
       - ./crypto-config/ordererOrganizations/trade.com/orderers/orderer2.trade.com/msp:/var/hyperledger/orderer/msp
       - ./crypto-config/ordererOrganizations/trade.com/orderers/orderer2.trade.com/tls:/var/hyperledger/orderer/tls
       - orderer2.trade.com:/var/hyperledger/production/orderer
-    ports:
-      - 9050:9050
-      - 9053:9053
-      - 9445:9445
-    networks:
-      - trade
+    ports: [ 9050:9050, 9053:9053, 9445:9445 ]
 
   # CouchDB for Peer0 Org1
   couchdb0.org1:
@@ -112,26 +94,20 @@ services:
 
   # Peer0 Org1
   peer0.org1.trade.com:
+    <<: *peer-common
     container_name: peer0.org1.trade.com
-    image: hyperledger/fabric-peer:2.5
     env_file:
       - ./environment/peer.env
       - ./environment/peer-org1.env
       - ./environment/peer0-org1.env
     depends_on:
       - couchdb0.org1
-    working_dir: /root
-    command: peer node start
     volumes:
       - /var/run/docker.sock:/host/var/run/docker.sock
       - ./crypto-config/peerOrganizations/org1.trade.com/peers/peer0.org1.trade.com/msp:/etc/hyperledger/fabric/msp
       - ./crypto-config/peerOrganizations/org1.trade.com/peers/peer0.org1.trade.com/tls:/etc/hyperledger/fabric/tls
       - peer0.org1.trade.com:/var/hyperledger/production
-    ports:
-      - 7051:7051
-      - 9446:9446
-    networks:
-      - trade
+    ports: [ 7051:7051, 9446:9446 ]
 
   # CouchDB for Peer1 Org1
   couchdb1.org1:
@@ -141,26 +117,20 @@ services:
 
   # Peer1 Org1
   peer1.org1.trade.com:
+    <<: *peer-common
     container_name: peer1.org1.trade.com
-    image: hyperledger/fabric-peer:2.5
     env_file:
       - ./environment/peer.env
       - ./environment/peer-org1.env
       - ./environment/peer1-org1.env
     depends_on:
       - couchdb1.org1
-    working_dir: /root
-    command: peer node start
     volumes:
       - /var/run/docker.sock:/host/var/run/docker.sock
       - ./crypto-config/peerOrganizations/org1.trade.com/peers/peer1.org1.trade.com/msp:/etc/hyperledger/fabric/msp
       - ./crypto-config/peerOrganizations/org1.trade.com/peers/peer1.org1.trade.com/tls:/etc/hyperledger/fabric/tls
       - peer1.org1.trade.com:/var/hyperledger/production
-    ports:
-      - 8051:8051
-      - 9447:9447
-    networks:
-      - trade
+    ports: [ 8051:8051, 9447:9447 ]
 
   # CouchDB for Peer2 Org1
   couchdb2.org1:
@@ -170,26 +140,20 @@ services:
 
   # Peer2 Org1
   peer2.org1.trade.com:
+    <<: *peer-common
     container_name: peer2.org1.trade.com
-    image: hyperledger/fabric-peer:2.5
     env_file:
       - ./environment/peer.env
       - ./environment/peer-org1.env
       - ./environment/peer2-org1.env
     depends_on:
       - couchdb2.org1
-    working_dir: /root
-    command: peer node start
     volumes:
       - /var/run/docker.sock:/host/var/run/docker.sock
       - ./crypto-config/peerOrganizations/org1.trade.com/peers/peer2.org1.trade.com/msp:/etc/hyperledger/fabric/msp
       - ./crypto-config/peerOrganizations/org1.trade.com/peers/peer2.org1.trade.com/tls:/etc/hyperledger/fabric/tls
       - peer2.org1.trade.com:/var/hyperledger/production
-    ports:
-      - 10051:10051
-      - 9448:9448
-    networks:
-      - trade
+    ports: [ 10051:10051, 9448:9448 ]
 
   # CouchDB for Peer0 Org2
   couchdb0.org2:
@@ -199,26 +163,20 @@ services:
 
   # Peer0 Org2
   peer0.org2.trade.com:
+    <<: *peer-common
     container_name: peer0.org2.trade.com
-    image: hyperledger/fabric-peer:2.5
     env_file:
       - ./environment/peer.env
       - ./environment/peer-org2.env
       - ./environment/peer0-org2.env
     depends_on:
       - couchdb0.org2
-    working_dir: /root
-    command: peer node start
     volumes:
       - /var/run/docker.sock:/host/var/run/docker.sock
       - ./crypto-config/peerOrganizations/org2.trade.com/peers/peer0.org2.trade.com/msp:/etc/hyperledger/fabric/msp
       - ./crypto-config/peerOrganizations/org2.trade.com/peers/peer0.org2.trade.com/tls:/etc/hyperledger/fabric/tls
       - peer0.org2.trade.com:/var/hyperledger/production
-    ports:
-      - 9051:9051
-      - 9449:9449
-    networks:
-      - trade
+    ports: [ 9051:9051, 9449:9449 ]
 
   # CouchDB for Peer1 Org2
   couchdb1.org2:
@@ -228,26 +186,20 @@ services:
 
   # Peer1 Org2
   peer1.org2.trade.com:
+    <<: *peer-common
     container_name: peer1.org2.trade.com
-    image: hyperledger/fabric-peer:2.5
     env_file:
       - ./environment/peer.env
       - ./environment/peer-org2.env
       - ./environment/peer1-org2.env
     depends_on:
       - couchdb1.org2
-    working_dir: /root
-    command: peer node start
     volumes:
       - /var/run/docker.sock:/host/var/run/docker.sock
       - ./crypto-config/peerOrganizations/org2.trade.com/peers/peer1.org2.trade.com/msp:/etc/hyperledger/fabric/msp
       - ./crypto-config/peerOrganizations/org2.trade.com/peers/peer1.org2.trade.com/tls:/etc/hyperledger/fabric/tls
       - peer1.org2.trade.com:/var/hyperledger/production
-    ports:
-      - 11051:11051
-      - 9450:9450
-    networks:
-      - trade
+    ports: [ 11051:11051, 9450:9450 ]
 
   # CouchDB for Peer2 Org2
   couchdb2.org2:
@@ -257,26 +209,20 @@ services:
 
   # Peer2 Org2
   peer2.org2.trade.com:
+    <<: *peer-common
     container_name: peer2.org2.trade.com
-    image: hyperledger/fabric-peer:2.5
     env_file:
       - ./environment/peer.env
       - ./environment/peer-org2.env
       - ./environment/peer2-org2.env
     depends_on:
       - couchdb2.org2
-    working_dir: /root
-    command: peer node start
     volumes:
       - /var/run/docker.sock:/host/var/run/docker.sock
       - ./crypto-config/peerOrganizations/org2.trade.com/peers/peer2.org2.trade.com/msp:/etc/hyperledger/fabric/msp
       - ./crypto-config/peerOrganizations/org2.trade.com/peers/peer2.org2.trade.com/tls:/etc/hyperledger/fabric/tls
       - peer2.org2.trade.com:/var/hyperledger/production
-    ports:
-      - 12051:12051
-      - 9451:9451
-    networks:
-      - trade
+    ports: [ 12051:12051, 9451:9451 ]
 
   # CouchDB for Peer0 Org3
   couchdb0.org3:
@@ -286,26 +232,20 @@ services:
 
   # Peer0 Org3
   peer0.org3.trade.com:
+    <<: *peer-common
     container_name: peer0.org3.trade.com
-    image: hyperledger/fabric-peer:2.5
     env_file:
       - ./environment/peer.env
       - ./environment/peer-org3.env
       - ./environment/peer0-org3.env
     depends_on:
       - couchdb0.org3
-    working_dir: /root
-    command: peer node start
     volumes:
       - /var/run/docker.sock:/host/var/run/docker.sock
       - ./crypto-config/peerOrganizations/org3.trade.com/peers/peer0.org3.trade.com/msp:/etc/hyperledger/fabric/msp
       - ./crypto-config/peerOrganizations/org3.trade.com/peers/peer0.org3.trade.com/tls:/etc/hyperledger/fabric/tls
       - peer0.org3.trade.com:/var/hyperledger/production
-    ports:
-      - 13051:13051
-      - 9452:9452
-    networks:
-      - trade
+    ports: [ 13051:13051, 9452:9452 ]
 
   # CouchDB for Peer1 Org3
   couchdb1.org3:
@@ -315,6 +255,7 @@ services:
 
   # Peer1 Org3
   peer1.org3.trade.com:
+    <<: *peer-common
     container_name: peer1.org3.trade.com
     image: hyperledger/fabric-peer:2.5
     env_file:
@@ -323,18 +264,12 @@ services:
       - ./environment/peer1-org3.env
     depends_on:
       - couchdb1.org3
-    working_dir: /root
-    command: peer node start
     volumes:
       - /var/run/docker.sock:/host/var/run/docker.sock
       - ./crypto-config/peerOrganizations/org3.trade.com/peers/peer1.org3.trade.com/msp:/etc/hyperledger/fabric/msp
       - ./crypto-config/peerOrganizations/org3.trade.com/peers/peer1.org3.trade.com/tls:/etc/hyperledger/fabric/tls
       - peer1.org3.trade.com:/var/hyperledger/production
-    ports:
-      - 14051:14051
-      - 9453:9453
-    networks:
-      - trade
+    ports: [ 14051:14051, 9453:9453 ]
 
   # CouchDB for Peer2 Org3
   couchdb2.org3:
@@ -344,6 +279,7 @@ services:
 
   # Peer2 Org3
   peer2.org3.trade.com:
+    <<: *peer-common
     container_name: peer2.org3.trade.com
     image: hyperledger/fabric-peer:2.5
     env_file:
@@ -352,18 +288,12 @@ services:
       - ./environment/peer2-org3.env
     depends_on:
       - couchdb2.org3
-    working_dir: /root
-    command: peer node start
     volumes:
       - /var/run/docker.sock:/host/var/run/docker.sock
       - ./crypto-config/peerOrganizations/org3.trade.com/peers/peer2.org3.trade.com/msp:/etc/hyperledger/fabric/msp
       - ./crypto-config/peerOrganizations/org3.trade.com/peers/peer2.org3.trade.com/tls:/etc/hyperledger/fabric/tls
       - peer2.org3.trade.com:/var/hyperledger/production
-    ports:
-      - 15051:15051
-      - 9454:9454
-    networks:
-      - trade
+    ports: [ 15051:15051, 9454:9454 ]
 
   # CLI tool
   cli:
