@@ -121,6 +121,32 @@ func (s *SmartContract) MerchantExists(ctx contractapi.TransactionContextInterfa
 	return merchantJSON != nil, nil
 }
 
+func (s *SmartContract) CreateMerchant(ctx contractapi.TransactionContextInterface, id string, merchantType string, taxId string, accountBalance float64) error {
+	exists, err := s.MerchantExists(ctx, id)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return fmt.Errorf("the asset %s already exists", id)
+	}
+
+	merchant := model.Merchant{
+		ID:             id,
+		Type:           model.MerchantType(merchantType),
+		TaxID:          taxId,
+		Products:       []string{},
+		Invoices:       []string{},
+		AccountBalance: accountBalance,
+	}
+
+	merchantJSON, err := json.Marshal(merchant)
+	if err != nil {
+		return err
+	}
+
+	return ctx.GetStub().PutState(id, merchantJSON)
+}
+
 func main() {
 	chaincode, err := contractapi.NewChaincode(&SmartContract{})
 	if err != nil {
