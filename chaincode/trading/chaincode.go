@@ -113,6 +113,14 @@ func (s *SmartContract) Init(ctx contractapi.TransactionContextInterface) error 
 	return nil
 }
 
+func (s *SmartContract) MerchantExists(ctx contractapi.TransactionContextInterface, id string) (bool, error) {
+	merchantJSON, err := ctx.GetStub().GetState(id)
+	if err != nil {
+		return false, fmt.Errorf("failed to read from world state: %v", err)
+	}
+	return merchantJSON != nil, nil
+}
+
 func main() {
 	chaincode, err := contractapi.NewChaincode(&SmartContract{})
 	if err != nil {
