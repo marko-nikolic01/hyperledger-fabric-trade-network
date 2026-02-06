@@ -118,6 +118,21 @@ func (s *SmartContract) MerchantExists(ctx contractapi.TransactionContextInterfa
 	if err != nil {
 		return false, fmt.Errorf("failed to read from world state: %v", err)
 	}
+
+	if merchantJSON == nil {
+		return false, nil
+	}
+
+	var merchant model.Merchant
+	err = json.Unmarshal(merchantJSON, &merchant)
+	if err != nil {
+		return false, nil
+	}
+
+	if merchant.ID == "" || merchant.Type == "" {
+		return false, nil
+	}
+
 	return merchantJSON != nil, nil
 }
 
@@ -145,6 +160,31 @@ func (s *SmartContract) CreateMerchant(ctx contractapi.TransactionContextInterfa
 	}
 
 	return ctx.GetStub().PutState(id, merchantJSON)
+}
+
+func (s *SmartContract) AddProductsToMerchant(ctx contractapi.TransactionContextInterface, merchantID string, productIDs []string) error {
+	merchantJSON, err := ctx.GetStub().GetState(merchantID)
+	if err != nil {
+		return fmt.Errorf("failed to read merchant %s from world state: %v", merchantID, err)
+	}
+	if merchantJSON == nil {
+		return fmt.Errorf("merchant %s does not exist", merchantID)
+	}
+
+	var merchant model.Merchant
+	err = json.Unmarshal(merchantJSON, &merchant)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal merchant JSON: %v", err)
+	}
+
+	merchant.Products = append(merchant.Products, productIDs...)
+
+	updatedJSON, err := json.Marshal(merchant)
+	if err != nil {
+		return fmt.Errorf("failed to marshal updated merchant: %v", err)
+	}
+
+	return ctx.GetStub().PutState(merchantID, updatedJSON)
 }
 
 func main() {
