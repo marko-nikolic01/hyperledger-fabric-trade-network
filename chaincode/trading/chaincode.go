@@ -159,6 +159,29 @@ func (s *SmartContract) ProductExists(ctx contractapi.TransactionContextInterfac
 	return productJSON != nil, nil
 }
 
+func (s *SmartContract) CustomerExists(ctx contractapi.TransactionContextInterface, id string) (bool, error) {
+	customerJSON, err := ctx.GetStub().GetState(id)
+	if err != nil {
+		return false, fmt.Errorf("failed to read from world state: %v", err)
+	}
+
+	if customerJSON == nil {
+		return false, nil
+	}
+
+	var customer model.Customer
+	err = json.Unmarshal(customerJSON, &customer)
+	if err != nil {
+		return false, nil
+	}
+
+	if customer.ID == "" || customer.Email == "" {
+		return false, nil
+	}
+
+	return true, nil
+}
+
 func (s *SmartContract) CreateMerchant(ctx contractapi.TransactionContextInterface, id string, merchantType string, taxId string, accountBalance float64) (*model.Merchant, error) {
 	exists, err := s.MerchantExists(ctx, id)
 	if err != nil {
@@ -252,6 +275,40 @@ func (s *SmartContract) AddProductsToMerchant(ctx contractapi.TransactionContext
 	}
 
 	return merchant, err
+}
+
+func (s *SmartContract) AddCustomers(ctx contractapi.TransactionContextInterface, customers []model.Customer) ([]model.Customer, error) {
+
+	createdCustomers := []model.Customer{}
+
+	for _, customer := range customers {
+
+		exists, err := s.CustomerExists(ctx, customer.ID)
+		if err != nil {
+			return []model.Customer{}, err
+		}
+		if exists {
+			return []model.Customer{}, fmt.Errorf("customer %s already exists", customer.ID)
+		}
+
+		if customer.Invoices == nil {
+			customer.Invoices = []string{}
+		}
+
+		customerJSON, err := json.Marshal(customer)
+		if err != nil {
+			return []model.Customer{}, fmt.Errorf("failed to marshal customer %s: %v", customer.ID, err)
+		}
+
+		err = ctx.GetStub().PutState(customer.ID, customerJSON)
+		if err != nil {
+			return []model.Customer{}, fmt.Errorf("failed to save customer %s: %v", customer.ID, err)
+		}
+
+		createdCustomers = append(createdCustomers, customer)
+	}
+
+	return createdCustomers, nil
 }
 
 func main() {
