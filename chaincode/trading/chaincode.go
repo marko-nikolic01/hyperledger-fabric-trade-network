@@ -232,6 +232,29 @@ func (s *SmartContract) GetMerchant(ctx contractapi.TransactionContextInterface,
 	return &merchant, nil
 }
 
+func (s *SmartContract) GetCustomer(ctx contractapi.TransactionContextInterface, id string) (*model.Customer, error) {
+	exists, err := s.CustomerExists(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check if customer %s exists: %v", id, err)
+	}
+	if !exists {
+		return nil, fmt.Errorf("customer %s does not exist", id)
+	}
+
+	customerJSON, err := ctx.GetStub().GetState(id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read customer %s from world state: %v", id, err)
+	}
+
+	var customer model.Customer
+	err = json.Unmarshal(customerJSON, &customer)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal customer JSON: %v", err)
+	}
+
+	return &customer, nil
+}
+
 func (s *SmartContract) AddProductsToMerchant(ctx contractapi.TransactionContextInterface, merchantID string, products []model.Product) (*model.Merchant, error) {
 
 	merchant, err := s.GetMerchant(ctx, merchantID)
@@ -309,6 +332,74 @@ func (s *SmartContract) AddCustomers(ctx contractapi.TransactionContextInterface
 	}
 
 	return createdCustomers, nil
+}
+
+func (s *SmartContract) DepositToMerchant(ctx contractapi.TransactionContextInterface, merchantID string, amount float64) (string, error) {
+	if amount <= 0 {
+		return "", fmt.Errorf("amount must be positive")
+	}
+
+	merchant, err := s.GetMerchant(ctx, merchantID)
+	if err != nil {
+		return "", err
+	}
+
+	oldBalance := merchant.AccountBalance
+	merchant.AccountBalance += amount
+	newBalance := merchant.AccountBalance
+
+	merchantJSON, err := json.Marshal(merchant)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal merchant: %v", err)
+	}
+
+	err = ctx.GetStub().PutState(merchantID, merchantJSON)
+	if err != nil {
+		return "", fmt.Errorf("failed to update merchant in world state: %v", err)
+	}
+
+	response := map[string]interface{}{
+		"id":         merchantID,
+		"oldBalance": oldBalance,
+		"newBalance": newBalance,
+	}
+
+	respJSON, _ := json.Marshal(response)
+	return string(respJSON), nil
+}
+
+func (s *SmartContract) DepositToCustomer(ctx contractapi.TransactionContextInterface, customerID string, amount float64) (string, error) {
+	if amount <= 0 {
+		return "", fmt.Errorf("amount must be positive")
+	}
+
+	customer, err := s.GetCustomer(ctx, customerID)
+	if err != nil {
+		return "", err
+	}
+
+	oldBalance := customer.AccountBalance
+	customer.AccountBalance += amount
+	newBalance := customer.AccountBalance
+
+	customerJSON, err := json.Marshal(customer)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal customer: %v", err)
+	}
+
+	err = ctx.GetStub().PutState(customerID, customerJSON)
+	if err != nil {
+		return "", fmt.Errorf("failed to update customer in world state: %v", err)
+	}
+
+	response := map[string]interface{}{
+		"id":         customerID,
+		"oldBalance": oldBalance,
+		"newBalance": newBalance,
+	}
+
+	respJSON, _ := json.Marshal(response)
+	return string(respJSON), nil
 }
 
 func main() {
