@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"trading/model"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
@@ -502,6 +503,72 @@ func (s *SmartContract) BuyProduct(ctx contractapi.TransactionContextInterface, 
 	}
 	responseJSON, _ := json.Marshal(response)
 	return string(responseJSON), nil
+}
+
+func (s *SmartContract) QueryProducts(ctx contractapi.TransactionContextInterface, name string, productID string, merchantType string, maxPrice float64) ([]model.Product, error) {
+	// Check for every search param, except for merchantType (will be checked for later)
+	selector := make(map[string]interface{})
+	if name != "" {
+		selector["name"] = map[string]string{"$regex": name}
+	}
+	if productID != "" {
+		selector["id"] = productID
+	}
+	if maxPrice >= 0 {
+		selector["price"] = map[string]interface{}{"$lte": maxPrice}
+	}
+
+	// If there are no search params, include everything
+	if len(selector) == 0 {
+		selector["id"] = map[string]string{"$regex": ".*"}
+	}
+
+	query := map[string]interface{}{
+		"selector": selector,
+	}
+
+	queryBytes, err := json.Marshal(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal query: %v", err)
+	}
+
+	// Query the CouchDB
+	resultsIterator, err := ctx.GetStub().GetQueryResult(string(queryBytes))
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute query: %v", err)
+	}
+	defer resultsIterator.Close()
+
+	var filteredProducts []model.Product
+
+	// Check for merchantType separately
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+
+		var product model.Product
+		err = json.Unmarshal(queryResponse.Value, &product)
+		if err != nil {
+			return nil, err
+		}
+
+		if merchantType != "" {
+			merchant, err := s.GetMerchant(ctx, product.MerchantID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get merchant %s for product %s: %v", product.MerchantID, product.ID, err)
+			}
+
+			if string(merchant.Type) != strings.ToUpper(merchantType) {
+				continue
+			}
+		}
+
+		filteredProducts = append(filteredProducts, product)
+	}
+
+	return filteredProducts, nil
 }
 
 func main() {
