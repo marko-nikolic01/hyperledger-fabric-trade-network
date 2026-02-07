@@ -255,6 +255,24 @@ func (s *SmartContract) GetCustomer(ctx contractapi.TransactionContextInterface,
 	return &customer, nil
 }
 
+func (s *SmartContract) GetProduct(ctx contractapi.TransactionContextInterface, id string) (*model.Product, error) {
+	productJSON, err := ctx.GetStub().GetState(id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read product %s from world state: %v", id, err)
+	}
+	if productJSON == nil {
+		return nil, fmt.Errorf("product %s does not exist", id)
+	}
+
+	var product model.Product
+	err = json.Unmarshal(productJSON, &product)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal product %s: %v", id, err)
+	}
+
+	return &product, nil
+}
+
 func (s *SmartContract) AddProductsToMerchant(ctx contractapi.TransactionContextInterface, merchantID string, products []model.Product) (*model.Merchant, error) {
 
 	merchant, err := s.GetMerchant(ctx, merchantID)
@@ -400,6 +418,90 @@ func (s *SmartContract) DepositToCustomer(ctx contractapi.TransactionContextInte
 
 	respJSON, _ := json.Marshal(response)
 	return string(respJSON), nil
+}
+
+func (s *SmartContract) BuyProduct(ctx contractapi.TransactionContextInterface, customerID string, productID string) (string, error) {
+
+	// Get customer by id
+	customer, err := s.GetCustomer(ctx, customerID)
+	if err != nil {
+		return "", err
+	}
+
+	// TODO: Write GetProduct method
+	product, err := s.GetProduct(ctx, productID)
+	if err != nil {
+		return "", err
+	}
+
+	// Find merchant by product.merchantID
+	merchant, err := s.GetMerchant(ctx, product.MerchantID)
+	if err != nil {
+		return "", err
+	}
+
+	// Return if customer doesn't have sufficient funds
+	if customer.AccountBalance < product.Price {
+		return "", fmt.Errorf("customer %s has insufficient balance", customerID)
+	}
+
+	// Update customer and merchant balances
+	customerOldBalance := customer.AccountBalance
+	merchantOldBalance := merchant.AccountBalance
+	customer.AccountBalance -= product.Price
+	merchant.AccountBalance += product.Price
+
+	// Invoice
+	invoiceID := fmt.Sprintf("INV-%s-%s", customerID, productID)
+	customer.Invoices = append(customer.Invoices, invoiceID)
+	merchant.Invoices = append(merchant.Invoices, invoiceID)
+
+	// Update product quantity
+	product.Quantity -= 1
+
+	// Delete product if quantity 0
+	if product.Quantity <= 0 {
+		err = ctx.GetStub().DelState(product.ID)
+		if err != nil {
+			return "", fmt.Errorf("failed to delete product %s: %v", product.ID, err)
+		}
+	} else {
+		productJSON, _ := json.Marshal(product)
+		err = ctx.GetStub().PutState(product.ID, productJSON)
+		if err != nil {
+			return "", fmt.Errorf("failed to update product %s: %v", product.ID, err)
+		}
+	}
+
+	// Update customer data
+	customerJSON, _ := json.Marshal(customer)
+	err = ctx.GetStub().PutState(customerID, customerJSON)
+	if err != nil {
+		return "", fmt.Errorf("failed to update customer %s: %v", customerID, err)
+	}
+
+	// Update merchant data
+	merchantJSON, _ := json.Marshal(merchant)
+	err = ctx.GetStub().PutState(merchant.ID, merchantJSON)
+	if err != nil {
+		return "", fmt.Errorf("failed to update merchant %s: %v", merchant.ID, err)
+	}
+
+	// Return response
+	response := map[string]interface{}{
+		"customerID":          customerID,
+		"merchantID":          merchant.ID,
+		"productID":           product.ID,
+		"invoiceID":           invoiceID,
+		"price":               product.Price,
+		"customerOldBalance":  customerOldBalance,
+		"customerNewBalance":  customer.AccountBalance,
+		"merchantOldBalance":  merchantOldBalance,
+		"merchantNewBalance":  merchant.AccountBalance,
+		"productRemainingQty": product.Quantity,
+	}
+	responseJSON, _ := json.Marshal(response)
+	return string(responseJSON), nil
 }
 
 func main() {
