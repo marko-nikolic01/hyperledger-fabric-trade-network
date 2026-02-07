@@ -136,13 +136,36 @@ func (s *SmartContract) MerchantExists(ctx contractapi.TransactionContextInterfa
 	return merchantJSON != nil, nil
 }
 
-func (s *SmartContract) CreateMerchant(ctx contractapi.TransactionContextInterface, id string, merchantType string, taxId string, accountBalance float64) error {
+func (s *SmartContract) ProductExists(ctx contractapi.TransactionContextInterface, id string) (bool, error) {
+	productJSON, err := ctx.GetStub().GetState(id)
+	if err != nil {
+		return false, fmt.Errorf("failed to read from world state: %v", err)
+	}
+
+	if productJSON == nil {
+		return false, nil
+	}
+
+	var product model.Product
+	err = json.Unmarshal(productJSON, &product)
+	if err != nil {
+		return false, nil
+	}
+
+	if product.ID == "" {
+		return false, nil
+	}
+
+	return productJSON != nil, nil
+}
+
+func (s *SmartContract) CreateMerchant(ctx contractapi.TransactionContextInterface, id string, merchantType string, taxId string, accountBalance float64) (*model.Merchant, error) {
 	exists, err := s.MerchantExists(ctx, id)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if exists {
-		return fmt.Errorf("the asset %s already exists", id)
+		return nil, fmt.Errorf("the asset %s already exists", id)
 	}
 
 	merchant := model.Merchant{
@@ -156,35 +179,79 @@ func (s *SmartContract) CreateMerchant(ctx contractapi.TransactionContextInterfa
 
 	merchantJSON, err := json.Marshal(merchant)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return ctx.GetStub().PutState(id, merchantJSON)
+	err = ctx.GetStub().PutState(id, merchantJSON)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &merchant, err
 }
 
-func (s *SmartContract) AddProductsToMerchant(ctx contractapi.TransactionContextInterface, merchantID string, productIDs []string) error {
-	merchantJSON, err := ctx.GetStub().GetState(merchantID)
+func (s *SmartContract) GetMerchant(ctx contractapi.TransactionContextInterface, id string) (*model.Merchant, error) {
+	merchantJSON, err := ctx.GetStub().GetState(id)
 	if err != nil {
-		return fmt.Errorf("failed to read merchant %s from world state: %v", merchantID, err)
+		return nil, fmt.Errorf("failed to read merchant %s from world state: %v", id, err)
 	}
 	if merchantJSON == nil {
-		return fmt.Errorf("merchant %s does not exist", merchantID)
+		return nil, fmt.Errorf("merchant %s does not exist", id)
 	}
 
 	var merchant model.Merchant
 	err = json.Unmarshal(merchantJSON, &merchant)
 	if err != nil {
-		return fmt.Errorf("failed to unmarshal merchant JSON: %v", err)
+		return nil, fmt.Errorf("failed to unmarshal merchant JSON: %v", err)
 	}
 
-	merchant.Products = append(merchant.Products, productIDs...)
+	return &merchant, nil
+}
 
-	updatedJSON, err := json.Marshal(merchant)
+func (s *SmartContract) AddProductsToMerchant(ctx contractapi.TransactionContextInterface, merchantID string, products []model.Product) (*model.Merchant, error) {
+
+	merchant, err := s.GetMerchant(ctx, merchantID)
 	if err != nil {
-		return fmt.Errorf("failed to marshal updated merchant: %v", err)
+		return nil, err
 	}
 
-	return ctx.GetStub().PutState(merchantID, updatedJSON)
+	for _, product := range products {
+		exists, err := s.ProductExists(ctx, product.ID)
+		if err != nil {
+			return nil, err
+		}
+		if exists {
+			return nil, fmt.Errorf("product %s already exists", product.ID)
+		}
+
+		product.MerchantID = merchantID
+
+		productJSON, err := json.Marshal(product)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal product %s: %v", product.ID, err)
+		}
+
+		err = ctx.GetStub().PutState(product.ID, productJSON)
+		if err != nil {
+			return nil, fmt.Errorf("failed to save product %s: %v", product.ID, err)
+		}
+
+		merchant.Products = append(merchant.Products, product.ID)
+	}
+
+	merchantJSON, err := json.Marshal(merchant)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal merchant: %v", err)
+	}
+
+	err = ctx.GetStub().PutState(merchantID, merchantJSON)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return merchant, err
 }
 
 func main() {
