@@ -11,6 +11,16 @@ const commandMap: Record<string, string> = {
     [MenuOption.HELP]: 'help'
 };
 
+const sdkOperations = [
+    MenuOption.CREATE_MERCHANT,
+    MenuOption.ADD_PRODUCTS,
+    MenuOption.CREATE_CUSTOMERS,
+    MenuOption.BUY_PRODUCTS,
+    MenuOption.DEPOSIT_TO_MERCHANT,
+    MenuOption.DEPOSIT_TO_CUSTOMER,
+    MenuOption.QUERY_PRODUCTS,
+]
+
 export async function confirmSensitiveOperation(operation: string, warning: string): Promise<boolean> {
     const { confirmed } = await inquirer.prompt([
         {
@@ -24,5 +34,10 @@ export async function confirmSensitiveOperation(operation: string, warning: stri
 }
 
 export function getCommandForOption(option: MenuOption): string | undefined {
-    return commandMap[option];
+    
+    if (sdkOperations.includes(option)) {
+        return undefined;
+    }
+
+    return commandMap[option] || undefined;
 }
