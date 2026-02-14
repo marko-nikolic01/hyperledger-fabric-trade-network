@@ -48,3 +48,8 @@ generateChannelArtifacts() {
 
 generateCrypto || exit 1
 generateChannelArtifacts || exit 1
+
+# crypto-config permissions setup
+echo "Changing ownership of crypto-config to current user..."
+sudo chown -R $USER:$USER ./network/crypto-config/
+echo "Crypto material generated and ownership adjusted"
