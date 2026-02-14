@@ -429,7 +429,7 @@ func (s *SmartContract) BuyProduct(ctx contractapi.TransactionContextInterface, 
 		return "", err
 	}
 
-	// TODO: Write GetProduct method
+	// Get product by id
 	product, err := s.GetProduct(ctx, productID)
 	if err != nil {
 		return "", err
