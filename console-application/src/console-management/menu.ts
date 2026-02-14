@@ -53,7 +53,6 @@ export async function showMenu(): Promise<MenuOption> {
 
                 new inquirer.Separator('--- Channel Management ---'),
                 MenuOption.CREATE_CHANNELS,
-                MenuOption.CREATE_CHANNELS,
 
                 new inquirer.Separator('--- Chaincode Management ---'),
                 MenuOption.DEPLOY_CHAINCODE,

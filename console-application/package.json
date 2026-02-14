@@ -8,10 +8,16 @@
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts"
   },
-  "keywords": ["hyperledger", "fabric", "blockchain", "trade"],
+  "keywords": [
+    "hyperledger",
+    "fabric",
+    "blockchain",
+    "trade"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "fabric-network": "^2.2.20",
     "inquirer": "^8.2.5"
   },
   "devDependencies": {
