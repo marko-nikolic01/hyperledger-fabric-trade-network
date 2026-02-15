@@ -31,7 +31,7 @@ async function handleSDKOperation(choice: MenuOption): Promise<void> {
                     data.taxId,
                     data.accountBalance
                 );
-                console.log('\n📄 Result:');
+                console.log('\nResult:');
                 console.log(JSON.stringify(result, null, 2));
                 break;
             }
@@ -47,7 +47,7 @@ async function handleSDKOperation(choice: MenuOption): Promise<void> {
                     merchantId: productData.merchantId
                 }];
                 const result = await ops.addProductsToMerchant(productData.merchantId, products);
-                console.log('\n📄 Result:');
+                console.log('\nResult:');
                 console.log(JSON.stringify(result, null, 2));
                 break;
             }
@@ -63,7 +63,7 @@ async function handleSDKOperation(choice: MenuOption): Promise<void> {
                     invoices: []
                 }];
                 const result = await ops.createCustomers(customers);
-                console.log('\n📄 Result:');
+                console.log('\nResult:');
                 console.log(JSON.stringify(result, null, 2));
                 break;
             }
@@ -72,7 +72,7 @@ async function handleSDKOperation(choice: MenuOption): Promise<void> {
                 const customerId = await promptForId('Customer');
                 const productId = await promptForId('Product');
                 const result = await ops.buyProduct(customerId, productId);
-                console.log('\n📄 Purchase Result:');
+                console.log('\nPurchase Result:');
                 console.log(JSON.stringify(result, null, 2));
                 break;
             }
@@ -80,7 +80,7 @@ async function handleSDKOperation(choice: MenuOption): Promise<void> {
             case MenuOption.DEPOSIT_TO_MERCHANT: {
                 const data = await promptDepositData('merchant');
                 const result = await ops.depositToMerchant(data.id, data.amount);
-                console.log('\n📄 Result:');
+                console.log('\nResult:');
                 console.log(JSON.stringify(result, null, 2));
                 break;
             }
@@ -88,7 +88,7 @@ async function handleSDKOperation(choice: MenuOption): Promise<void> {
             case MenuOption.DEPOSIT_TO_CUSTOMER: {
                 const data = await promptDepositData('customer');
                 const result = await ops.depositToCustomer(data.id, data.amount);
-                console.log('\n📄 Result:');
+                console.log('\nResult:');
                 console.log(JSON.stringify(result, null, 2));
                 break;
             }
@@ -101,16 +101,16 @@ async function handleSDKOperation(choice: MenuOption): Promise<void> {
                     searchParams.merchantType,
                     searchParams.maxPrice
                 );
-                console.log('\n📄 Search Results:');
+                console.log('\nSearch Results:');
                 console.log(JSON.stringify(results, null, 2));
                 break;
             }
 
             default:
-                console.log('❌ Operation not yet implemented');
+                console.log('Operation not yet implemented');
         }
     } catch (error: any) {
-        console.error('\n❌ Operation failed:', error.message);
+        console.error('\nOperation failed:', error.message);
     }
 }
 

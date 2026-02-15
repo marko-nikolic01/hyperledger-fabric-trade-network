@@ -7,8 +7,6 @@ export class ChaincodeOperations {
         this.gateway = gateway;
     }
 
-    // ========== MERCHANT OPERATIONS ==========
-
     async createMerchant(id: string, merchantType: string, taxId: string, accountBalance: number): Promise<any> {
         console.log(`\nCreating merchant ${id}...`);
         
@@ -24,8 +22,6 @@ export class ChaincodeOperations {
         console.log('Merchant created successfully!');
         return merchant;
     }
-
-    // ========== PRODUCT OPERATIONS ==========
 
     async addProductsToMerchant(merchantId: string, products: any[]): Promise<any> {
         console.log(`\nAdding ${products.length} product(s) to merchant ${merchantId}...`);
@@ -58,8 +54,6 @@ export class ChaincodeOperations {
         return products;
     }
 
-    // ========== CUSTOMER OPERATIONS ==========
-
     async createCustomers(customers: any[]): Promise<any[]> {
         console.log(`\nCreating ${customers.length} customer(s)...`);
         
@@ -74,8 +68,6 @@ export class ChaincodeOperations {
         return createdCustomers;
     }
 
-    // ========== PURCHASE OPERATIONS ==========
-
     async buyProduct(customerId: string, productId: string): Promise<any> {
         console.log(`\nProcessing purchase: Customer ${customerId} buying Product ${productId}...`);
         
@@ -86,11 +78,9 @@ export class ChaincodeOperations {
         );
 
         const purchaseResult = JSON.parse(result);
-        console.log('✅ Purchase completed successfully!');
+        console.log('Purchase completed successfully!');
         return purchaseResult;
     }
-
-    // ========== DEPOSIT OPERATIONS ==========
 
     async depositToMerchant(merchantId: string, amount: number): Promise<any> {
         console.log(`\nDepositing ${amount} to merchant ${merchantId}...`);
@@ -116,7 +106,7 @@ export class ChaincodeOperations {
         );
 
         const depositResult = JSON.parse(result);
-        console.log('✅ Deposit successful!');
+        console.log('Deposit successful!');
         return depositResult;
     }
 }

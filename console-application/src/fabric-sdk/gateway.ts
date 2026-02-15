@@ -7,7 +7,6 @@ export class FabricGateway {
     private network: Network | null = null;
     private contract: Contract | null = null;
 
-    // This function connects to Fabric network using admin identity
     async connect(orgName: string = 'org1', channelName: string = 'tradechannel1'): Promise<void> {
         try {
             console.log(`\nConnecting to Fabric network as Admin@${orgName}...`);
@@ -67,7 +66,7 @@ export class FabricGateway {
         const privateKeyPath = path.join(keyPath, keyFiles[0]);
         const privateKey = fs.readFileSync(privateKeyPath, 'utf8');
 
-        const orgNameCap = orgName.charAt(0).toUpperCase() + orgName.slice(1); // Org1, Org2, Org3
+        const orgNameCap = orgName.charAt(0).toUpperCase() + orgName.slice(1);
         const mspId = `${orgNameCap}MSP`;
 
         const identity: X509Identity = {
@@ -82,7 +81,7 @@ export class FabricGateway {
         const identityLabel = `Admin@${orgName}.trade.com`;
         await wallet.put(identityLabel, identity);
 
-        console.log(`✅ Identity loaded and saved to wallet as ${identityLabel}`);
+        console.log(`Identity loaded and saved to wallet as ${identityLabel}`);
         return identity;
     }
 
@@ -143,7 +142,7 @@ export class FabricGateway {
             const result = await this.contract.evaluateTransaction(functionName, ...args);
             return result.toString();
         } catch (error) {
-            console.error(`❌ Failed to evaluate transaction ${functionName}:`, error);
+            console.error(`Failed to evaluate transaction ${functionName}:`, error);
             throw error;
         }
     }
@@ -157,7 +156,7 @@ export class FabricGateway {
             const result = await this.contract.submitTransaction(functionName, ...args);
             return result.toString();
         } catch (error) {
-            console.error(`❌ Failed to submit transaction ${functionName}:`, error);
+            console.error(`Failed to submit transaction ${functionName}:`, error);
             throw error;
         }
     }
@@ -165,7 +164,7 @@ export class FabricGateway {
     async disconnect(): Promise<void> {
         if (this.gateway) {
             await this.gateway.disconnect();
-            console.log('✅ Disconnected from network');
+            console.log('Disconnected from network');
         }
     }
 
