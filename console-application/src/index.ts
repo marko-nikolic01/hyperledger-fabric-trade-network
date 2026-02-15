@@ -12,7 +12,7 @@ async function ensureConnected(): Promise<ChaincodeOperations> {
     if (!gateway || !chaincodeOps) {
         console.log('\n🔗 Connecting to Fabric network...');
         gateway = new FabricGateway();
-        await gateway.connect('org1', 'tradechannel1'); // Koristi Org1 admin
+        await gateway.connect('org1', 'tradechannel1');
         chaincodeOps = new ChaincodeOperations(gateway);
     }
     return chaincodeOps;
@@ -114,7 +114,6 @@ async function handleSDKOperation(choice: MenuOption): Promise<void> {
     }
 }
 
-// Helper import (dodaj u menu.ts ako već ne postoji)
 async function promptForId(entityType: string): Promise<string> {
     const inquirer = (await import('inquirer')).default;
     const { id } = await inquirer.prompt([
