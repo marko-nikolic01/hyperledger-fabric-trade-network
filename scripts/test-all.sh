@@ -2,6 +2,13 @@
 
 echo -e "  Running All Chaincode Tests"
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "${SCRIPT_DIR}")"
+TEST_DATA_FILE="$PROJECT_ROOT/.test-data"
+
+rm -f "$TEST_DATA_FILE"
+touch "$TEST_DATA_FILE"
+
 TOTAL=0
 PASSED=0
 FAILED=0

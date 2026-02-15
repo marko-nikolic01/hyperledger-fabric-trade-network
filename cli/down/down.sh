@@ -9,7 +9,7 @@ source "$PROJECT_ROOT/cli/utils/print-colored.sh"
 printColor "$YELLOW" "Stopping Trading Network..."
 
 cd "$NETWORK_DIR"
-docker compose down
+docker compose down --remove-orphans
 
 if [ $? -eq 0 ]; then
     printColor "$GREEN" "Trading Network stopped successfully"

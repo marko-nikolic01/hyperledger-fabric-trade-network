@@ -2,8 +2,8 @@
 
 echo -e "Test: Buy Product"
 
-CUSTOMER_ID="C_TEST_1"
-PRODUCT_ID="P_TEST_1"
+CUSTOMER_ID="C001"
+PRODUCT_ID="P001"
 
 echo -e "Customer $CUSTOMER_ID buying product $PRODUCT_ID"
 

@@ -2,7 +2,7 @@
 
 echo -e "Test: Deposit to Merchant"
 
-MERCHANT_ID="M_TEST_1"
+MERCHANT_ID="M001"
 AMOUNT="25000"
 
 echo -e "Depositing $AMOUNT to merchant $MERCHANT_ID"

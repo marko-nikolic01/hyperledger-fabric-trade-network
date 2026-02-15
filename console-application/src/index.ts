@@ -2,30 +2,104 @@
 import { MenuOption, promptCustomerData, promptDepositData, promptMerchantData, promptProductData, promptProductSearch, showMenu, waitForEnter } from './console-management/menu';
 import { confirmSensitiveOperation, getCommandForOption } from './console-management/menu-commands';
 import { executeCommand } from './command-executor/executor';
-import { FabricGateway } from './fabric-sdk/gateway';
+import { FabricCAClient } from './fabric-sdk/ca-client';
 import { ChaincodeOperations } from './fabric-sdk/chaincode-operations';
+import { Wallets } from 'fabric-network';
 
-let gateway: FabricGateway | null = null;
-let chaincodeOps: ChaincodeOperations | null = null;
+const chaincodeOps = new ChaincodeOperations();
+const defaultChannel = 'tradechannel1';
+let currentOrg: string | null = null;
+let currentIdentityLabel: string | null = null;
 
-async function ensureConnected(): Promise<ChaincodeOperations> {
-    if (!gateway || !chaincodeOps) {
-        console.log('\nConnecting to Fabric network...');
-        gateway = new FabricGateway();
-        await gateway.connect('org1', 'tradechannel1');
-        chaincodeOps = new ChaincodeOperations(gateway);
+function ensureIdentitySelected(): { orgName: string; identityLabel: string } {
+    if (!currentOrg || !currentIdentityLabel) {
+        throw new Error('No identity selected. Use "Login (select identity)" first.');
     }
-    return chaincodeOps;
+    return {
+        orgName: currentOrg,
+        identityLabel: currentIdentityLabel
+    };
+}
+
+async function handleLogin(): Promise<void> {
+    const walletPath = `${process.cwd()}/wallet`;
+    const wallet = await Wallets.newFileSystemWallet(walletPath);
+    const identities = await wallet.list();
+
+    if (identities.length === 0) {
+        console.log('\nNo identities in wallet. Enroll a user first.');
+        return;
+    }
+
+    const inquirer = (await import('inquirer')).default;
+    const { label } = await inquirer.prompt([
+        {
+            type: 'list',
+            name: 'label',
+            message: 'Select identity:',
+            choices: identities
+        }
+    ]);
+
+    const orgMatch = /@([^\.]+)\.trade\.com$/i.exec(label);
+    const orgName = orgMatch ? orgMatch[1] : '';
+
+    if (!orgName) {
+        throw new Error('Selected identity does not include org in label (expected user@orgX.trade.com).');
+    }
+
+    currentOrg = orgName;
+    currentIdentityLabel = label;
+    console.log(`\nLogged in as ${label} (org: ${orgName}).`);
 }
 
 async function handleSDKOperation(choice: MenuOption): Promise<void> {
     try {
-        const ops = await ensureConnected();
+        if (choice === MenuOption.LOGIN) {
+            await handleLogin();
+            return;
+        }
+        if (choice === MenuOption.ENROLL_CA_USER) {
+            const inquirer = (await import('inquirer')).default;
+            const { orgName, userId, userSecret } = await inquirer.prompt([
+                {
+                    type: 'list',
+                    name: 'orgName',
+                    message: 'Select organization:',
+                    choices: ['org1', 'org2', 'org3']
+                },
+                {
+                    type: 'input',
+                    name: 'userId',
+                    message: 'User ID:'
+                },
+                {
+                    type: 'password',
+                    name: 'userSecret',
+                    message: 'User Secret (password):',
+                    mask: '*'
+                }
+            ]);
+
+            const caClient = new FabricCAClient();
+            await caClient.registerAndEnrollUser({
+                orgName,
+                userId: userId.trim(),
+                userSecret: userSecret.trim()
+            });
+            console.log(`\nUser ${userId} enrolled and added to wallet.`);
+            return;
+        }
+
+        const { orgName, identityLabel } = ensureIdentitySelected();
 
         switch (choice) {
             case MenuOption.CREATE_MERCHANT: {
                 const data = await promptMerchantData();
-                const result = await ops.createMerchant(
+                const result = await chaincodeOps.createMerchant(
+                    orgName,
+                    defaultChannel,
+                    identityLabel,
                     data.id,
                     data.type,
                     data.taxId,
@@ -46,7 +120,13 @@ async function handleSDKOperation(choice: MenuOption): Promise<void> {
                     expirationDate: productData.expirationDate,
                     merchantId: productData.merchantId
                 }];
-                const result = await ops.addProductsToMerchant(productData.merchantId, products);
+                const result = await chaincodeOps.addProductsToMerchant(
+                    orgName,
+                    defaultChannel,
+                    identityLabel,
+                    productData.merchantId,
+                    products
+                );
                 console.log('\nResult:');
                 console.log(JSON.stringify(result, null, 2));
                 break;
@@ -62,7 +142,12 @@ async function handleSDKOperation(choice: MenuOption): Promise<void> {
                     accountBalance: customerData.accountBalance,
                     invoices: []
                 }];
-                const result = await ops.createCustomers(customers);
+                const result = await chaincodeOps.createCustomers(
+                    orgName,
+                    defaultChannel,
+                    identityLabel,
+                    customers
+                );
                 console.log('\nResult:');
                 console.log(JSON.stringify(result, null, 2));
                 break;
@@ -71,7 +156,13 @@ async function handleSDKOperation(choice: MenuOption): Promise<void> {
             case MenuOption.BUY_PRODUCTS: {
                 const customerId = await promptForId('Customer');
                 const productId = await promptForId('Product');
-                const result = await ops.buyProduct(customerId, productId);
+                const result = await chaincodeOps.buyProduct(
+                    orgName,
+                    defaultChannel,
+                    identityLabel,
+                    customerId,
+                    productId
+                );
                 console.log('\nPurchase Result:');
                 console.log(JSON.stringify(result, null, 2));
                 break;
@@ -79,7 +170,13 @@ async function handleSDKOperation(choice: MenuOption): Promise<void> {
 
             case MenuOption.DEPOSIT_TO_MERCHANT: {
                 const data = await promptDepositData('merchant');
-                const result = await ops.depositToMerchant(data.id, data.amount);
+                const result = await chaincodeOps.depositToMerchant(
+                    orgName,
+                    defaultChannel,
+                    identityLabel,
+                    data.id,
+                    data.amount
+                );
                 console.log('\nResult:');
                 console.log(JSON.stringify(result, null, 2));
                 break;
@@ -87,7 +184,13 @@ async function handleSDKOperation(choice: MenuOption): Promise<void> {
 
             case MenuOption.DEPOSIT_TO_CUSTOMER: {
                 const data = await promptDepositData('customer');
-                const result = await ops.depositToCustomer(data.id, data.amount);
+                const result = await chaincodeOps.depositToCustomer(
+                    orgName,
+                    defaultChannel,
+                    identityLabel,
+                    data.id,
+                    data.amount
+                );
                 console.log('\nResult:');
                 console.log(JSON.stringify(result, null, 2));
                 break;
@@ -95,7 +198,10 @@ async function handleSDKOperation(choice: MenuOption): Promise<void> {
 
             case MenuOption.QUERY_PRODUCTS: {
                 const searchParams = await promptProductSearch();
-                const results = await ops.queryProducts(
+                const results = await chaincodeOps.queryProducts(
+                    orgName,
+                    defaultChannel,
+                    identityLabel,
                     searchParams.name,
                     searchParams.productId,
                     searchParams.merchantType,
@@ -130,9 +236,6 @@ async function promptForId(entityType: string): Promise<string> {
 async function handleMenuChoice(choice: MenuOption): Promise<boolean> {
     if (choice === MenuOption.EXIT) {
         console.log('\nExiting...\n');
-        if (gateway) {
-            await gateway.disconnect();
-        }
         return false;
     }
 
@@ -180,9 +283,6 @@ async function main(): Promise<void> {
     } catch (error) {
         if (error instanceof Error && error.message.includes('User force closed')) {
             console.log('\nExiting...\n');
-            if (gateway) {
-                await gateway.disconnect();
-            }
             process.exit(0);
         }
         console.error('\nAn error occurred:', error);

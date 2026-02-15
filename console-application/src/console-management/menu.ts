@@ -13,9 +13,9 @@ export enum MenuOption {
     // Chaincode management
     DEPLOY_CHAINCODE = 'Deploy Chaincode (tn deploycc)',
     
-    // Login
-    REGISTER = 'Register',
-    LOGIN = 'Login',
+    // Authentication
+    ENROLL_CA_USER = 'Enroll user (Fabric CA)',
+    LOGIN = 'Login (select identity)',
     
     // Functionalities
     CREATE_MERCHANT = 'Create merchant',
@@ -58,8 +58,9 @@ export async function showMenu(): Promise<MenuOption> {
                 MenuOption.DEPLOY_CHAINCODE,
 
                 // new inquirer.Separator('--- Register/login ---'),
-                // MenuOption.REGISTER,
-                // MenuOption.LOGIN,
+                new inquirer.Separator('--- Authentication ---'),
+                MenuOption.ENROLL_CA_USER,
+                MenuOption.LOGIN,
 
                 new inquirer.Separator('--- Functionalities ---'),
                 MenuOption.CREATE_MERCHANT,

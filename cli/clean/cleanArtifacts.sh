@@ -26,4 +26,22 @@ if [ -d "$NETWORK_DIR/system-genesis-block" ]; then
     printColor "$GREEN" "  system-genesis-block removed"
 fi
 
+if [ -d "$NETWORK_DIR/fabric-ca" ]; then
+    printColor "$YELLOW" "  Removing fabric-ca/"
+    sudo rm -rf "$NETWORK_DIR/fabric-ca"
+    printColor "$GREEN" "  fabric-ca removed"
+fi
+
+if [ -d "$NETWORK_DIR/fabric-ca-client" ]; then
+    printColor "$YELLOW" "  Removing fabric-ca-client/"
+    sudo rm -rf "$NETWORK_DIR/fabric-ca-client"
+    printColor "$GREEN" "  fabric-ca-client removed"
+fi
+
+if [ -d "$PROJECT_ROOT/console-application/wallet" ]; then
+    printColor "$YELLOW" "  Removing console-application/wallet/"
+    sudo rm -rf "$PROJECT_ROOT/console-application/wallet"
+    printColor "$GREEN" "  console-application wallet removed"
+fi
+
 printColor "$GREEN" "Artifacts cleaned"

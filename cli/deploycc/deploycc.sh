@@ -37,6 +37,16 @@ for CHANNEL in "${CHANNELS[@]}"; do
         printColor "$RED" "Initialization failed for $CHANNEL"
         exit 1
     fi
+
+    echo ""
+    printColor "$YELLOW" "Phase 3: Updating channel MSPs with Fabric CA root certs..."
+    echo ""
+    bash "$PROJECT_ROOT/cli/deploycc/update-channel-msp.sh" "$CHANNEL"
+
+    if [ $? -ne 0 ]; then
+        printColor "$RED" "Channel MSP update failed for $CHANNEL"
+        exit 1
+    fi
     
     echo ""
     printColor "$GREEN" "Deployment completed for $CHANNEL"

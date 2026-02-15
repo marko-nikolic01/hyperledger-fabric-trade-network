@@ -2,7 +2,7 @@
 
 echo -e "Test: Deposit to Customer"
 
-CUSTOMER_ID="C_TEST_1"
+CUSTOMER_ID="C001"
 AMOUNT="10000"
 
 echo -e "Depositing $AMOUNT to customer $CUSTOMER_ID"

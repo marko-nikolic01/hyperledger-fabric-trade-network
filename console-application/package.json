@@ -18,6 +18,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "fabric-ca-client": "^2.2.20",
     "fabric-network": "^2.2.20",
     "inquirer": "^8.2.5"
   },

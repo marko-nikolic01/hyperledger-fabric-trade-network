@@ -12,6 +12,8 @@ const commandMap: Record<string, string> = {
 };
 
 const sdkOperations = [
+    MenuOption.LOGIN,
+    MenuOption.ENROLL_CA_USER,
     MenuOption.CREATE_MERCHANT,
     MenuOption.ADD_PRODUCTS,
     MenuOption.CREATE_CUSTOMERS,

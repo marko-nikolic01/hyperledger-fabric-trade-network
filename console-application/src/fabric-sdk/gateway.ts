@@ -7,19 +7,23 @@ export class FabricGateway {
     private network: Network | null = null;
     private contract: Contract | null = null;
 
-    async connect(orgName: string = 'org1', channelName: string = 'tradechannel1'): Promise<void> {
+    async connect(orgName: string = 'org1', channelName: string = 'tradechannel1', identityLabel?: string): Promise<void> {
         try {
-            console.log(`\nConnecting to Fabric network as Admin@${orgName}...`);
+            const resolvedIdentityLabel = identityLabel ?? `Admin@${orgName}.trade.com`;
+            console.log(`\nConnecting to Fabric network as ${resolvedIdentityLabel}...`);
 
             const walletPath = path.join(process.cwd(), 'wallet');
             const wallet = await Wallets.newFileSystemWallet(walletPath);
 
-            const identityLabel = `Admin@${orgName}.trade.com`;
-            let identity = await wallet.get(identityLabel);
+            let identity = await wallet.get(resolvedIdentityLabel);
 
             if (!identity) {
-                console.log(`Identity not found in wallet. Loading from crypto-config...`);
-                identity = await this.loadIdentityFromCryptoConfig(wallet, orgName);
+                if (resolvedIdentityLabel === `Admin@${orgName}.trade.com`) {
+                    console.log(`Identity not found in wallet. Loading from crypto-config...`);
+                    identity = await this.loadIdentityFromCryptoConfig(wallet, orgName);
+                } else {
+                    throw new Error(`Identity ${resolvedIdentityLabel} not found in wallet. Enroll it first.`);
+                }
             }
 
             const ccp = this.buildConnectionProfile(orgName);
@@ -27,7 +31,7 @@ export class FabricGateway {
             this.gateway = new Gateway();
             await this.gateway.connect(ccp, {
                 wallet,
-                identity: identityLabel,
+                identity: resolvedIdentityLabel,
                 discovery: { enabled: true, asLocalhost: true }
             });
 
@@ -36,7 +40,7 @@ export class FabricGateway {
             this.network = await this.gateway.getNetwork(channelName);
             this.contract = this.network.getContract('trading');
 
-            console.log(`Connected to network as admin-${orgName} on channel ${channelName}`);
+            console.log(`Connected to network as ${resolvedIdentityLabel} on channel ${channelName}`);
         } catch (error) {
             console.error(`Failed to connect to network:`, error);
             throw error;
