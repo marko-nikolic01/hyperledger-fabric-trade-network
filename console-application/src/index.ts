@@ -10,7 +10,7 @@ let chaincodeOps: ChaincodeOperations | null = null;
 
 async function ensureConnected(): Promise<ChaincodeOperations> {
     if (!gateway || !chaincodeOps) {
-        console.log('\n🔗 Connecting to Fabric network...');
+        console.log('\nConnecting to Fabric network...');
         gateway = new FabricGateway();
         await gateway.connect('org1', 'tradechannel1');
         chaincodeOps = new ChaincodeOperations(gateway);
