@@ -14,6 +14,7 @@ if ! docker info > /dev/null 2>&1; then
 fi
 
 ORDERERS=("orderer0.trade.com" "orderer1.trade.com" "orderer2.trade.com")
+CAS=("ca.org1.trade.com" "ca.org2.trade.com" "ca.org3.trade.com")
 PEERS=("peer0.org1.trade.com" "peer1.org1.trade.com" "peer2.org1.trade.com" 
        "peer0.org2.trade.com" "peer1.org2.trade.com" "peer2.org2.trade.com"
        "peer0.org3.trade.com" "peer1.org3.trade.com" "peer2.org3.trade.com")
@@ -37,6 +38,17 @@ done
 echo ""
 printColor "$YELLOW" "Peers:"
 for container in "${PEERS[@]}"; do
+    if docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
+        printColor "$GREEN" "  $container"
+    else
+        printColor "$RED" "  $container"
+        ALL_RUNNING=false
+    fi
+done
+
+echo ""
+printColor "$YELLOW" "CAs:"
+for container in "${CAS[@]}"; do
     if docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
         printColor "$GREEN" "  $container"
     else

@@ -29,7 +29,7 @@ CHAINCODE_OK=$?
 echo ""
 if [ $CONTAINERS_OK -eq 0 ] && [ $CHANNELS_OK -eq 0 ] && [ $CHAINCODE_OK -eq 0 ]; then
     printColor "$GREEN" "All checks passed"
-    printColor "$GREEN" "  - 21 containers running"
+    printColor "$GREEN" "  - 24 containers running"
     printColor "$GREEN" "  - 2 channels configured"
     printColor "$GREEN" "  - 9 peers on each channel"
     printColor "$GREEN" "  - Chaincode deployed and functional"
